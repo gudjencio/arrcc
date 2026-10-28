@@ -19,7 +19,7 @@ arrcc is a web-based project designed to bring essential emergency assistance an
 
 arrcc is designed to be accessible through a web browser. Open the deployed application and allow the necessary browser permissions to use features such as geolocation.
 
-For the most reliable geolocation experience, open ARRCC directly in its published web application rather than through an embedded page. Location access depends on browser permissions, device settings, and a secure connection.
+For the most reliable geolocation experience, open arrcc directly in its published web application rather than through an embedded page. Location access depends on browser permissions, device settings, and a secure connection.
 
 ## Important Safety Notice
 
