@@ -159,7 +159,7 @@ $('alarmButton').onclick = async () => {
     if (audio !== ctx) return;
 
     const master = ctx.createGain();
-    master.gain.value = 0.78;
+    master.gain.value = 0.62;
     master.connect(ctx.destination);
 
     const button = $('alarmButton');
@@ -169,41 +169,40 @@ $('alarmButton').onclick = async () => {
     button.style.borderColor = '#ff3030';
     button.style.background = 'linear-gradient(145deg,#760707,#160404)';
 
+    // Sirène aiguë et ultra-rapide : trois oscillateurs persistants évitent
+    // de créer des centaines de nœuds audio par seconde.
     let step = 0;
+    const sirenVoices = [
+      { type: 'square', osc: ctx.createOscillator(), gain: ctx.createGain(), ratio: 1 },
+      { type: 'sawtooth', osc: ctx.createOscillator(), gain: ctx.createGain(), ratio: 0.73 },
+      { type: 'triangle', osc: ctx.createOscillator(), gain: ctx.createGain(), ratio: 1.31 }
+    ];
+    sirenVoices.forEach((voice, i) => {
+      voice.osc.type = voice.type;
+      voice.gain.gain.value = [0.075, 0.035, 0.025][i];
+      voice.osc.connect(voice.gain);
+      voice.gain.connect(master);
+      voice.osc.start();
+      alarmNodes.push(voice.osc);
+    });
+
     const pulse = () => {
       if (audio !== ctx || ctx.state === 'closed') return;
       const now = ctx.currentTime;
-      const duration = 0.115;
-      const pattern = [0,1,0,2,1,0,2,0,2,1,0,2];
+      const pattern = [0, 2, 1, 2, 0, 1, 2, 0, 2, 1, 0, 2, 1, 0, 2, 2];
       const mode = pattern[step % pattern.length];
-      const base = [1750,920,1320][mode];
-      const end = [520,1880,680][mode];
+      const highs = [3650, 4750, 4050];
+      const lows = [2450, 3150, 2800];
+      const from = highs[mode];
+      const to = lows[(mode + (step % 3)) % 3];
 
-      const makeLayer = (type, from, to, level, detune) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = type;
-        osc.detune.value = detune;
-        osc.frequency.setValueAtTime(from, now);
-        osc.frequency.exponentialRampToValueAtTime(Math.max(30,to), now + duration);
-        gain.gain.setValueAtTime(0.0001, now);
-        gain.gain.exponentialRampToValueAtTime(level, now + 0.006);
-        gain.gain.setValueAtTime(level, now + duration * 0.55);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-        osc.connect(gain);
-        gain.connect(master);
-        osc.start(now);
-        osc.stop(now + duration);
-        alarmNodes.push(osc);
-        osc.onended = () => {
-          try { osc.disconnect(); gain.disconnect(); } catch (_) {}
-          alarmNodes = alarmNodes.filter(node => node !== osc);
-        };
-      };
-
-      makeLayer('square', base, end, 0.115, 0);
-      makeLayer('sawtooth', base * 0.48, end * 0.72, 0.045, -13);
-      makeLayer('triangle', end * 1.35, base * 0.82, 0.035, 11);
+      sirenVoices.forEach((voice, i) => {
+        const f = Math.max(700, (step % 2 ? from : to) * voice.ratio);
+        voice.osc.frequency.cancelScheduledValues(now);
+        voice.osc.frequency.setTargetAtTime(f, now, 0.002);
+        voice.gain.gain.cancelScheduledValues(now);
+        voice.gain.gain.setTargetAtTime([0.075, 0.035, 0.025][i] * (step % 4 === 0 ? 1.35 : 1), now, 0.0015);
+      });
       step++;
     };
 
@@ -250,7 +249,7 @@ $('alarmButton').onclick = async () => {
 
     pulse();
     play808();
-    alarmTimer = setInterval(pulse, 135);
+    alarmTimer = setInterval(pulse, 13.5);
     bassTimer = setInterval(play808, 540);
   } catch (_) {
     stopAlarm();
