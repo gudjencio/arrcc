@@ -121,10 +121,13 @@ const modal=$('sosModal');$('sosButton').onclick=()=>{modal.classList.add('open'
 let alarmTimer = null;
 let audio = null;
 let alarmNodes = [];
+let bassTimer = null;
 
 function stopAlarm() {
   if (alarmTimer !== null) clearInterval(alarmTimer);
+  if (bassTimer !== null) clearInterval(bassTimer);
   alarmTimer = null;
+  bassTimer = null;
   alarmNodes.forEach(node => {
     try { node.stop(); } catch (_) {}
     try { node.disconnect(); } catch (_) {}
@@ -143,7 +146,7 @@ function stopAlarm() {
 
 $('alarmButton').setAttribute('aria-pressed', 'false');
 $('alarmButton').onclick = async () => {
-  if (alarmTimer !== null || audio !== null) {
+  if (alarmTimer !== null || bassTimer !== null || audio !== null) {
     stopAlarm();
     return;
   }
@@ -154,9 +157,11 @@ $('alarmButton').onclick = async () => {
     audio = ctx;
     await ctx.resume();
     if (audio !== ctx) return;
+
     const master = ctx.createGain();
     master.gain.value = 0.78;
     master.connect(ctx.destination);
+
     const button = $('alarmButton');
     button.lastElementChild.textContent = tr('stopAlarm');
     button.setAttribute('aria-pressed', 'true');
@@ -169,19 +174,18 @@ $('alarmButton').onclick = async () => {
       if (audio !== ctx || ctx.state === 'closed') return;
       const now = ctx.currentTime;
       const duration = 0.115;
-      const pattern = [0, 1, 0, 2, 1, 0, 2, 0];
+      const pattern = [0,1,0,2,1,0,2,0,2,1,0,2];
       const mode = pattern[step % pattern.length];
-      const base = [1750, 920, 1320][mode];
-      const end = [520, 1880, 680][mode];
+      const base = [1750,920,1320][mode];
+      const end = [520,1880,680][mode];
 
-      // Impulsions sonores très rapprochées, avec des balayages brusques et irréguliers.
       const makeLayer = (type, from, to, level, detune) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = type;
         osc.detune.value = detune;
         osc.frequency.setValueAtTime(from, now);
-        osc.frequency.exponentialRampToValueAtTime(to, now + duration);
+        osc.frequency.exponentialRampToValueAtTime(Math.max(30,to), now + duration);
         gain.gain.setValueAtTime(0.0001, now);
         gain.gain.exponentialRampToValueAtTime(level, now + 0.006);
         gain.gain.setValueAtTime(level, now + duration * 0.55);
@@ -196,13 +200,58 @@ $('alarmButton').onclick = async () => {
           alarmNodes = alarmNodes.filter(node => node !== osc);
         };
       };
+
       makeLayer('square', base, end, 0.115, 0);
       makeLayer('sawtooth', base * 0.48, end * 0.72, 0.045, -13);
       makeLayer('triangle', end * 1.35, base * 0.82, 0.035, 11);
       step++;
     };
+
+    const play808 = () => {
+      if (audio !== ctx || ctx.state === 'closed') return;
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const sub = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const subGain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+
+      osc.type = 'sine';
+      sub.type = 'triangle';
+      osc.frequency.setValueAtTime(58, now);
+      osc.frequency.exponentialRampToValueAtTime(30, now + 0.42);
+      sub.frequency.setValueAtTime(43, now);
+      sub.frequency.exponentialRampToValueAtTime(27, now + 0.55);
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(125, now);
+      filter.Q.value = 1.8;
+
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.30, now + 0.018);
+      gain.gain.exponentialRampToValueAtTime(0.19, now + 0.28);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.65);
+
+      subGain.gain.setValueAtTime(0.0001, now);
+      subGain.gain.exponentialRampToValueAtTime(0.13, now + 0.015);
+      subGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.35);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(master);
+      sub.connect(subGain);
+      subGain.connect(master);
+      osc.start(now);
+      sub.start(now);
+      osc.stop(now + 1.72);
+      sub.stop(now + 1.42);
+      alarmNodes.push(osc, sub);
+    };
+
     pulse();
+    play808();
     alarmTimer = setInterval(pulse, 135);
+    bassTimer = setInterval(play808, 540);
   } catch (_) {
     stopAlarm();
     toast(tr('alarmUnavailable'));
@@ -416,6 +465,5 @@ applyLanguage(lang);
 </script>
 </body>
 </html>
-
 
 
