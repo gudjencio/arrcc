@@ -125,19 +125,14 @@ let alarmNodes = [];
 function stopAlarm() {
   if (alarmTimer !== null) clearInterval(alarmTimer);
   alarmTimer = null;
-
   alarmNodes.forEach(node => {
     try { node.stop(); } catch (_) {}
     try { node.disconnect(); } catch (_) {}
   });
   alarmNodes = [];
-
   const oldAudio = audio;
   audio = null;
-  if (oldAudio && oldAudio.state !== 'closed') {
-    oldAudio.close().catch(() => {});
-  }
-
+  if (oldAudio && oldAudio.state !== 'closed') oldAudio.close().catch(() => {});
   const button = $('alarmButton');
   button.lastElementChild.textContent = tr('alarm');
   button.setAttribute('aria-pressed', 'false');
@@ -152,79 +147,62 @@ $('alarmButton').onclick = async () => {
     stopAlarm();
     return;
   }
-
   try {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) throw new Error('Audio unavailable');
-
     const ctx = new AC();
     audio = ctx;
     await ctx.resume();
     if (audio !== ctx) return;
-
     const master = ctx.createGain();
-    master.gain.value = 0.92;
+    master.gain.value = 0.78;
     master.connect(ctx.destination);
-
     const button = $('alarmButton');
     button.lastElementChild.textContent = tr('stopAlarm');
     button.setAttribute('aria-pressed', 'true');
     button.classList.add('alarm-active');
-    button.style.borderColor = '#ff4545';
-    button.style.background = 'linear-gradient(145deg,#610909,#190707)';
+    button.style.borderColor = '#ff3030';
+    button.style.background = 'linear-gradient(145deg,#760707,#160404)';
 
     let step = 0;
     const pulse = () => {
       if (audio !== ctx || ctx.state === 'closed') return;
       const now = ctx.currentTime;
-      const high = step % 2 === 0;
-      const duration = 0.48;
+      const duration = 0.115;
+      const pattern = [0, 1, 0, 2, 1, 0, 2, 0];
+      const mode = pattern[step % pattern.length];
+      const base = [1750, 920, 1320][mode];
+      const end = [520, 1880, 680][mode];
 
-      // Sirène d'alerte plus puissante : balayage aigu/grave, deux couches désaccordées.
-      const main = ctx.createOscillator();
-      const mainGain = ctx.createGain();
-      main.type = 'square';
-      main.frequency.setValueAtTime(high ? 1480 : 680, now);
-      main.frequency.exponentialRampToValueAtTime(high ? 620 : 1420, now + duration);
-      mainGain.gain.setValueAtTime(0.0001, now);
-      mainGain.gain.exponentialRampToValueAtTime(0.19, now + 0.018);
-      mainGain.gain.setValueAtTime(0.19, now + duration - 0.07);
-      mainGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-      main.connect(mainGain);
-      mainGain.connect(master);
-      main.start(now);
-      main.stop(now + duration);
-      alarmNodes.push(main);
-      main.onended = () => {
-        try { main.disconnect(); mainGain.disconnect(); } catch (_) {}
-        alarmNodes = alarmNodes.filter(node => node !== main);
+      // Impulsions sonores très rapprochées, avec des balayages brusques et irréguliers.
+      const makeLayer = (type, from, to, level, detune) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.detune.value = detune;
+        osc.frequency.setValueAtTime(from, now);
+        osc.frequency.exponentialRampToValueAtTime(to, now + duration);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(level, now + 0.006);
+        gain.gain.setValueAtTime(level, now + duration * 0.55);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+        osc.connect(gain);
+        gain.connect(master);
+        osc.start(now);
+        osc.stop(now + duration);
+        alarmNodes.push(osc);
+        osc.onended = () => {
+          try { osc.disconnect(); gain.disconnect(); } catch (_) {}
+          alarmNodes = alarmNodes.filter(node => node !== osc);
+        };
       };
-
-      // Deuxième tonalité plus grave pour donner une sirène dense et inquiétante.
-      const undertone = ctx.createOscillator();
-      const underGain = ctx.createGain();
-      undertone.type = 'sawtooth';
-      undertone.frequency.setValueAtTime(high ? 520 : 390, now);
-      undertone.frequency.exponentialRampToValueAtTime(high ? 360 : 560, now + duration);
-      underGain.gain.setValueAtTime(0.0001, now);
-      underGain.gain.exponentialRampToValueAtTime(0.075, now + 0.025);
-      underGain.gain.setValueAtTime(0.075, now + duration - 0.08);
-      underGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-      undertone.connect(underGain);
-      underGain.connect(master);
-      undertone.start(now);
-      undertone.stop(now + duration);
-      alarmNodes.push(undertone);
-      undertone.onended = () => {
-        try { undertone.disconnect(); underGain.disconnect(); } catch (_) {}
-        alarmNodes = alarmNodes.filter(node => node !== undertone);
-      };
-
+      makeLayer('square', base, end, 0.115, 0);
+      makeLayer('sawtooth', base * 0.48, end * 0.72, 0.045, -13);
+      makeLayer('triangle', end * 1.35, base * 0.82, 0.035, 11);
       step++;
     };
-
     pulse();
-    alarmTimer = setInterval(pulse, 520);
+    alarmTimer = setInterval(pulse, 135);
   } catch (_) {
     stopAlarm();
     toast(tr('alarmUnavailable'));
