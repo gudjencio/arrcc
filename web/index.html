@@ -158,9 +158,18 @@ $('alarmButton').onclick = async () => {
     await ctx.resume();
     if (audio !== ctx) return;
 
+    // Compression de sécurité : évite les pics numériques incontrôlés.
+    const limiter = ctx.createDynamicsCompressor();
+    limiter.threshold.value = -8;
+    limiter.knee.value = 3;
+    limiter.ratio.value = 16;
+    limiter.attack.value = 0.003;
+    limiter.release.value = 0.12;
+    limiter.connect(ctx.destination);
+
     const master = ctx.createGain();
     master.gain.value = 0.62;
-    master.connect(ctx.destination);
+    master.connect(limiter);
 
     const button = $('alarmButton');
     button.lastElementChild.textContent = tr('stopAlarm');
@@ -173,15 +182,37 @@ $('alarmButton').onclick = async () => {
     // de créer des centaines de nœuds audio par seconde.
     let step = 0;
     const sirenVoices = [
-      { type: 'square', osc: ctx.createOscillator(), gain: ctx.createGain(), ratio: 1 },
-      { type: 'sawtooth', osc: ctx.createOscillator(), gain: ctx.createGain(), ratio: 0.73 },
-      { type: 'triangle', osc: ctx.createOscillator(), gain: ctx.createGain(), ratio: 1.31 }
+      { type: 'square', osc: ctx.createOscillator(), gain: ctx.createGain(), tremolo: ctx.createGain(), ratio: 1 },
+      { type: 'sawtooth', osc: ctx.createOscillator(), gain: ctx.createGain(), tremolo: ctx.createGain(), ratio: 0.73 },
+      { type: 'triangle', osc: ctx.createOscillator(), gain: ctx.createGain(), tremolo: ctx.createGain(), ratio: 1.31 }
     ];
+
+    // Modulation à 7 400 Hz : 100 fois la cadence de 74 Hz de la version précédente.
+    // Elle transforme la sirène en son très rugueux sans créer 7 400 timers/seconde.
+    const rapidModulator = ctx.createOscillator();
+    const modulationDepth = ctx.createGain();
+    const modulationBias = ctx.createConstantSource();
+    rapidModulator.type = 'square';
+    rapidModulator.frequency.value = 7400;
+    modulationDepth.gain.value = 0.34;
+    modulationBias.offset.value = 0.66;
+    rapidModulator.connect(modulationDepth);
+    modulationDepth.connect(sirenVoices[0].tremolo.gain);
+    modulationDepth.connect(sirenVoices[1].tremolo.gain);
+    modulationDepth.connect(sirenVoices[2].tremolo.gain);
+    modulationBias.connect(sirenVoices[0].tremolo.gain);
+    modulationBias.connect(sirenVoices[1].tremolo.gain);
+    modulationBias.connect(sirenVoices[2].tremolo.gain);
+    rapidModulator.start();
+    modulationBias.start();
+    alarmNodes.push(rapidModulator, modulationBias);
+
     sirenVoices.forEach((voice, i) => {
       voice.osc.type = voice.type;
       voice.gain.gain.value = [0.075, 0.035, 0.025][i];
       voice.osc.connect(voice.gain);
-      voice.gain.connect(master);
+      voice.gain.connect(voice.tremolo);
+      voice.tremolo.connect(master);
       voice.osc.start();
       alarmNodes.push(voice.osc);
     });
@@ -201,7 +232,7 @@ $('alarmButton').onclick = async () => {
         voice.osc.frequency.cancelScheduledValues(now);
         voice.osc.frequency.setTargetAtTime(f, now, 0.002);
         voice.gain.gain.cancelScheduledValues(now);
-        voice.gain.gain.setTargetAtTime([0.075, 0.035, 0.025][i] * (step % 4 === 0 ? 1.35 : 1), now, 0.0015);
+        voice.gain.gain.setTargetAtTime([0.082, 0.042, 0.030][i] * (step % 4 === 0 ? 1.25 : 1), now, 0.0015);
       });
       step++;
     };
