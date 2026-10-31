@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#08090d">
 <meta name="description" content="ARRCC — outils discrets de sécurité personnelle.">
 <title>arrcc — Sécurité personnelle</title>
-<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.1/dist/maplibre-gl.css">
 <style>
 :root{color-scheme:dark;--bg:#08090d;--panel:#11131b;--border:rgba(151,164,191,.14);--text:#e7eaf1;--muted:#929aaa;--blue:#8ca8ce;--lavender:#b3a0d3;--sage:#8cb8ae;--rose:#c49aa5}
 *{box-sizing:border-box}html{scroll-behavior:smooth;background:var(--bg)}body{margin:0;min-height:100vh;color:var(--text);background:radial-gradient(ellipse at 50% -15%,rgba(49,53,85,.23),transparent 42rem),radial-gradient(ellipse at 100% 45%,rgba(50,31,57,.10),transparent 34rem),radial-gradient(ellipse at 0% 75%,rgba(24,49,52,.10),transparent 32rem),var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.55}
@@ -110,7 +110,7 @@ body::before {
 <footer><p data-i18n="footerTagline">Urgence, secours, résilience et couverture communautaire</p><p data-i18n="footerSafety">En cas de danger immédiat, contactez directement les services d’urgence locaux.</p><p><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap</a> · <span data-i18n="footerPrivacy">Si la confidentialité compte, utilisez un appareil de confiance.</span></p></footer>
 </div>
 <div class="modal-backdrop" id="sosModal" role="dialog" aria-modal="true" aria-labelledby="sosModalTitle"><div class="modal"><h2 id="sosModalTitle" data-i18n="modalTitle">Options d’urgence</h2><p data-i18n="modalCopy">En cas de danger immédiat, appelez le numéro d’urgence local. En France et dans une grande partie de l’Europe, le 112 permet de joindre les secours. Choisissez une action ci-dessous.</p><div class="modal-actions"><a class="btn" href="tel:112" data-i18n="call112">Appeler le 112</a><button class="btn secondary" id="modalCopyReport" type="button" data-i18n="copyDetails">Copier les détails</button><button class="btn secondary" id="closeModal" type="button" data-i18n="close">Fermer</button></div></div></div><div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/maplibre-gl@5.6.1/dist/maplibre-gl.js"></script>
 <script>
 (()=>{'use strict';const $=id=>document.getElementById(id);
 const T={fr:{brandSub:'SÉCURITÉ PERSONNELLE',eyebrow:'VOTRE ESPACE DE SÉCURITÉ PRIVÉ',heroTitle:'Vous n’êtes pas seul.e.',heroCopy:'Vos outils de sécurité et ressources d’urgence, réunis dans un espace calme et privé.',consent:'Utilisez les outils ci-dessous quand vous le souhaitez. Cette page n’appelle pas automatiquement les secours et n’envoie pas votre position.',sos:'SOS',emergency:'Urgences',police:'Police (France)',fire:'Pompiers (France)',textEmergency:'Urgence par SMS (France)',privacyLine:'Privé par défaut · Aucun appel automatique',toolsTitle:'Vos outils de sécurité',toolsSubtitle:'L’essentiel, sans attirer l’attention.',locationTitle:'Ma position',locationSubtitle:'Votre position, si nécessaire',locationDesc:'Demandez votre position actuelle et affichez-la éventuellement sur la carte.',locate:'Afficher ma position',locationIdle:'La position n’a pas été demandée.',locationNote:'Votre navigateur peut exiger HTTPS et une autorisation. Cette page n’envoie votre position nulle part.',contactsTitle:'Contacts de confiance',contactsSubtitle:'Les personnes de votre choix',addContact:'Ajouter un contact',contactsNote:'Les contacts sont enregistrés dans ce navigateur, sur cet appareil. Aucun message n’est envoyé automatiquement.',safetyToolsTitle:'Outils de sécurité',safetyToolsSubtitle:'Des outils simples, sous votre contrôle',alarm:'Déclencher l’alarme',stopAlarm:'Arrêter l’alarme',signal:'Signal écran',stopSignal:'Arrêter le signal',takePhoto:'Prendre une photo',recordVideo:'Enregistrer une vidéo',stopRecording:'Arrêter l’enregistrement',mediaIdle:'La caméra et le microphone sont désactivés.',mediaNote:'La caméra et le microphone nécessitent votre autorisation. Les médias restent sur cet appareil, sauf si vous choisissez de les enregistrer ou partager. Le signal écran ne contrôle pas le flash physique.',reportTitle:'Rapport d’incident',reportSubtitle:'Conserver une trace privée',reportPlaceholder:'Que s’est-il passé ? Ajoutez les dates, détails ou éléments à retenir…',copyReport:'Copier le rapport',emailReport:'Préparer un e-mail',reportNote:'Cela prépare un brouillon ou copie du texte. Aucun signalement n’est transmis et personne n’est contacté automatiquement.',footerTagline:'Urgence, secours, résilience et couverture communautaire',footerSafety:'En cas de danger immédiat, contactez directement les services d’urgence locaux.',footerPrivacy:'Si la confidentialité compte, utilisez un appareil de confiance.',modalTitle:'Options d’urgence',modalCopy:'En cas de danger immédiat, appelez le numéro d’urgence local. En France et dans une grande partie de l’Europe, le 112 permet de joindre les secours. Choisissez une action ci-dessous.',call112:'Appeler le 112',copyDetails:'Copier les détails',close:'Fermer',locationUnsupported:'La géolocalisation n’est pas prise en charge.',locationDenied:'Autorisation refusée ou position indisponible.',locationFound:'Position obtenue',contactName:'Nom du contact',contactEmail:'Adresse e-mail (facultatif)',contactAdded:'Contact ajouté.',contactRemoved:'Contact supprimé.',needEmail:'Ajoutez une adresse e-mail à un contact pour préparer un message.',reportCopied:'Rapport copié.',copyFailed:'Copie automatique impossible. Sélectionnez et copiez le texte.',noNotes:'Aucune note ajoutée.',cameraDenied:'Accès caméra impossible. Vérifiez les autorisations et utilisez HTTPS ou localhost.',photoTaken:'Photo capturée. Vous pouvez la télécharger ci-dessous.',savePhoto:'Télécharger la photo',recording:'Enregistrement en cours… Appuyez sur Arrêter lorsque vous avez terminé.',recordingSaved:'Enregistrement terminé. Vous pouvez le lire ou le télécharger.',downloadVideo:'Télécharger la vidéo',alarmUnavailable:'Le son n’a pas pu démarrer. Vérifiez le volume et les autorisations.',reportPrepared:'Votre application e-mail devrait ouvrir un brouillon. Relisez-le avant l’envoi.',screenSignalNote:'Signal écran actif. Appuyez sur Arrêter le signal pour terminer.',noContacts:'Aucun contact de confiance ajouté.',locationPrivacy:'Votre position est affichée ici uniquement ; elle n’est pas envoyée automatiquement.'},en:{brandSub:'PERSONAL SAFETY',eyebrow:'YOUR PRIVATE SAFETY SPACE',heroTitle:'You are not alone.',heroCopy:'Your safety tools and emergency resources, gathered in one calm, private space.',consent:'Use the tools below when you choose. This page does not automatically call emergency services or send your location.',sos:'SOS',emergency:'Emergency',police:'Police (France)',fire:'Fire service (France)',textEmergency:'Text emergency (France)',privacyLine:'Private by default · No automatic calls',toolsTitle:'Your safety tools',toolsSubtitle:'Everything you need, without the noise.',locationTitle:'My location',locationSubtitle:'Your position, when you need it',locationDesc:'Request your current location and optionally view it on the map.',locate:'Show my location',locationIdle:'Location has not been requested.',locationNote:'Your browser may require HTTPS and permission. Your location is not sent anywhere by this page.',contactsTitle:'Trusted contacts',contactsSubtitle:'People you choose',addContact:'Add trusted contact',contactsNote:'Contacts are stored in this browser on this device. No message is sent automatically.',safetyToolsTitle:'Safety tools',safetyToolsSubtitle:'Simple tools, under your control',alarm:'Sound alarm',stopAlarm:'Stop alarm',signal:'Screen signal',stopSignal:'Stop signal',takePhoto:'Take photo',recordVideo:'Record video',stopRecording:'Stop recording',mediaIdle:'Camera and microphone are off.',mediaNote:'Camera and microphone require permission. Media stays on this device unless you choose to save or share it. Screen signal cannot control a physical flashlight.',reportTitle:'Incident report',reportSubtitle:'Keep a private record',reportPlaceholder:'What happened? Add dates, details, or anything you want to remember…',copyReport:'Copy report',emailReport:'Prepare email',reportNote:'This creates a draft or copies text. It does not submit a report or contact anyone automatically.',footerTagline:'Emergency Rescue, Resilience & Community Coverage',footerSafety:'If you are in immediate danger, contact local emergency services directly.',footerPrivacy:'Use a device you trust when privacy matters.',modalTitle:'Emergency options',modalCopy:'If you are in immediate danger, call your local emergency number. In France and much of Europe, 112 reaches emergency services. Choose an action below.',call112:'Call 112',copyDetails:'Copy incident details',close:'Close',locationUnsupported:'Location is not supported by this browser.',locationDenied:'Location permission was denied or position is unavailable.',locationFound:'Location acquired',contactName:'Contact name',contactEmail:'Email address (optional)',contactAdded:'Trusted contact added.',contactRemoved:'Contact removed.',needEmail:'Add an email address to a contact to prepare an email.',reportCopied:'Report copied.',copyFailed:'Could not copy automatically. Select and copy the report text.',noNotes:'No incident notes added.',cameraDenied:'Camera access failed. Check permissions and use HTTPS or localhost.',photoTaken:'Photo captured. You can download it below.',savePhoto:'Download photo',recording:'Recording… select Stop recording when finished.',recordingSaved:'Recording finished. You can play or download it below.',downloadVideo:'Download video',alarmUnavailable:'Sound could not start. Check device volume and browser permissions.',reportPrepared:'Your email app should open with a draft. Review it before sending.',screenSignalNote:'Screen signal is active. Tap Stop signal to end it.',noContacts:'No trusted contacts added yet.',locationPrivacy:'Your location is displayed here only; it is not sent automatically.'}};
@@ -250,6 +250,7 @@ applyLanguage(lang);
     let busy = false;
     let map = null;
     let marker = null;
+    let mapReady = false;
 
     const fr = () => (document.documentElement.lang || 'fr').toLowerCase().startsWith('fr');
     const text = {
@@ -262,7 +263,10 @@ applyLanguage(lang);
       timeout: () => fr() ? 'La recherche a pris trop de temps. Réessayez près d’une fenêtre ou à l’extérieur.' : 'The location request timed out. Try again near a window or outdoors.',
       found: () => fr() ? 'Position obtenue' : 'Location acquired',
       privacy: () => fr() ? 'Votre position reste sur cet appareil.' : 'Your location stays on this device.',
-      iframe: () => fr() ? 'La page intégrée peut bloquer la géolocalisation. Ouvrez ARRCC directement dans un nouvel onglet depuis GitHub Pages.' : 'The embedded page may block geolocation. Open ARRCC directly in a new tab from GitHub Pages.'
+      iframe: () => fr() ? 'La page intégrée peut bloquer la géolocalisation. Ouvrez ARRCC directement dans un nouvel onglet depuis GitHub Pages.' : 'The embedded page may block geolocation. Open ARRCC directly in a new tab from GitHub Pages.',
+      mapLoading: () => fr() ? 'Chargement de la carte 3D…' : 'Loading the 3D map…',
+      mapError: () => fr() ? 'La carte ne peut pas être chargée. Vérifiez votre connexion ou réessayez plus tard.' : 'The map could not be loaded. Check your connection or try again later.',
+      mapReady: () => fr() ? 'Carte 3D prête. Votre position n’a pas été demandée.' : '3D map ready. Your location has not been requested.'
     };
 
     function errorText(error) {
@@ -281,43 +285,94 @@ applyLanguage(lang);
       return fr() ? 'Impossible d’obtenir votre position. Vérifiez les réglages de localisation et réessayez.' : 'Could not obtain your location. Check location settings and try again.';
     }
 
-    function showMap(latitude, longitude) {
-      if (!mapWrap || !mapContainer || !window.maplibregl) return;
-      mapWrap.classList.remove('hidden');
-      const center = [longitude, latitude];
-      const style = 'https://styles.maptoolkit.org/dark-3d.json';
-
+    function add3DBuildings() {
+      if (!map || !mapReady) return;
       try {
-        if (!map) {
-          map = new maplibregl.Map({
-            container: mapContainer,
-            style,
-            center,
-            zoom: 15.5,
-            pitch: 62,
-            bearing: -18,
-            maxPitch: 85,
-            antialias: true,
-            attributionControl: { compact: false }
-          });
-          map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
-          map.addControl(new maplibregl.ScaleControl({ maxWidth: 100, unit: 'metric' }), 'bottom-left');
-          map.on('load', function () {
-            const el = document.createElement('div');
-            el.className = 'map-location-marker';
-            marker = new maplibregl.Marker({ element: el, anchor: 'center' })
-              .setLngLat(center)
-              .addTo(map);
-            map.resize();
-          });
-        } else {
+        const styleDefinition = map.getStyle();
+        const vectorSourceId = Object.keys(styleDefinition.sources || {}).find(function (id) {
+          return styleDefinition.sources[id] && styleDefinition.sources[id].type === 'vector';
+        });
+        if (!vectorSourceId || map.getLayer('arrcc-3d-buildings')) return;
+
+        const firstSymbolLayer = (styleDefinition.layers || []).find(function (layer) {
+          return layer.type === 'symbol';
+        });
+        map.addLayer({
+          id: 'arrcc-3d-buildings',
+          source: vectorSourceId,
+          'source-layer': 'building',
+          type: 'fill-extrusion',
+          minzoom: 13,
+          paint: {
+            'fill-extrusion-color': '#68758a',
+            'fill-extrusion-height': ['interpolate', ['linear'], ['zoom'], 13, 0, 15, ['coalesce', ['get', 'render_height'], ['get', 'height'], 8]],
+            'fill-extrusion-base': ['coalesce', ['get', 'render_min_height'], ['get', 'min_height'], 0],
+            'fill-extrusion-opacity': 0.82
+          }
+        }, firstSymbolLayer ? firstSymbolLayer.id : undefined);
+      } catch (error) {
+        console.warn('ARRCC: bâtiments 3D indisponibles sur ce style.', error);
+      }
+    }
+
+    function showMap(latitude, longitude) {
+      if (!map || !mapWrap || !mapContainer) return;
+      const center = [longitude, latitude];
+      map.flyTo({ center, zoom: 16, pitch: 62, bearing: -18, duration: 1200, essential: true });
+      if (marker) {
+        marker.setLngLat(center);
+      } else if (mapReady && window.maplibregl) {
+        const el = document.createElement('div');
+        el.className = 'map-location-marker';
+        marker = new maplibregl.Marker({ element: el, anchor: 'center' })
+          .setLngLat(center)
+          .addTo(map);
+      }
+      map.once('idle', function () { map.resize(); });
+    }
+
+    function initializeMap() {
+      if (!mapWrap || !mapContainer) return;
+      mapWrap.classList.remove('hidden');
+
+      if (!window.maplibregl) {
+        status.textContent = text.mapError();
+        console.error('ARRCC: MapLibre GL JS n’a pas été chargé.');
+        return;
+      }
+
+      status.textContent = text.mapLoading();
+      try {
+        map = new maplibregl.Map({
+          container: mapContainer,
+          style: 'https://styles.maptoolkit.org/dark.json',
+          center: [0, 20],
+          zoom: 2,
+          pitch: 0,
+          bearing: 0,
+          maxPitch: 85,
+          antialias: true,
+          attributionControl: { compact: false }
+        });
+
+        map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
+        map.addControl(new maplibregl.ScaleControl({ maxWidth: 100, unit: 'metric' }), 'bottom-left');
+
+        map.on('load', function () {
+          mapReady = true;
+          add3DBuildings();
           map.resize();
-          map.flyTo({ center, zoom: 15.5, pitch: 62, bearing: -18, duration: 1000, essential: true });
-          if (marker) marker.setLngLat(center);
-        }
-        setTimeout(function () { if (map) map.resize(); }, 300);
-      } catch (_) {
-        // The location itself remains valid even if the map provider fails.
+          status.textContent = text.mapReady();
+          setTimeout(function () { if (map) map.resize(); }, 250);
+        });
+
+        map.on('error', function (event) {
+          console.error('ARRCC MapLibre error:', event && event.error ? event.error : event);
+          if (!mapReady) status.textContent = text.mapError();
+        });
+      } catch (error) {
+        console.error('ARRCC map initialization error:', error);
+        status.textContent = text.mapError();
       }
     }
 
@@ -368,6 +423,7 @@ applyLanguage(lang);
       );
     }
 
+    initializeMap();
     button.addEventListener('click', requestLocation, false);
   }
 
