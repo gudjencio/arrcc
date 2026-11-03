@@ -457,5 +457,36 @@ class ARRCCBrowserSmokeTests(unittest.TestCase):
                     context.close()
 
 
+    def test_service_worker_serves_emergency_interface_after_offline_reload(self):
+        # Verify the cached app shell can reopen offline; no external requests or calls.
+        context = self.create_context(browser_name="chromium")
+        errors = []
+        try:
+            page = self.open_page(context)
+            page.on("pageerror", lambda error: errors.append(str(error)))
+            page.wait_for_function(
+                "('serviceWorker' in navigator) && navigator.serviceWorker.controller !== null",
+                timeout=10000,
+            ) if page.evaluate("!!navigator.serviceWorker && !!navigator.serviceWorker.controller") else None
+            page.evaluate("navigator.serviceWorker.ready")
+            page.wait_for_function(
+                "!!navigator.serviceWorker && !!navigator.serviceWorker.getRegistration()",
+                timeout=10000,
+            )
+            page.evaluate("navigator.serviceWorker.ready")
+            context.set_offline(True)
+            page.reload(wait_until="domcontentloaded", timeout=10000)
+            page.locator("#sosButton").wait_for(state="visible", timeout=5000)
+            self.assertFalse(page.locator("#sosButton").is_disabled())
+            page.locator("#sosButton").click()
+            dialog = page.locator("#sosModal")
+            self.assertIn("open", dialog.get_attribute("class") or "")
+            for number in ("112", "17", "18", "114"):
+                self.assertGreater(page.locator(f'#sosModal a[href="tel:{number}"]').count(), 0)
+            self.assertEqual(errors, [], f"Unexpected page errors after offline reload: {errors}")
+        finally:
+            context.close()
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
