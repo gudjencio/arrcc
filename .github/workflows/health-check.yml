@@ -28,7 +28,7 @@ jobs:
   static-health-checks:
     name: Static integrity and regression checks
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -50,7 +50,7 @@ jobs:
       - name: Install Playwright browser test dependencies
         run: |
           python -m pip install "playwright>=1.55,<2.0"
-          python -m playwright install --with-deps chromium
+          python -m playwright install --with-deps chromium firefox webkit
 
       - name: Run desktop and mobile browser smoke tests
         id: browser
@@ -83,7 +83,7 @@ jobs:
             echo "- Commit: ${GITHUB_SHA}"
             echo "- UTC: $(date -u +'%Y-%m-%d %H:%M:%S')"
             echo "- Static checks: ${{ steps.checks.outcome }}"
-            echo "- Browser checks: ${{ steps.browser.outcome }}"
+            echo "- Browser checks (Chromium, Firefox, WebKit; desktop/mobile): ${{ steps.browser.outcome }}"
             echo "- Published site check: ${{ steps.live.outcome }}"
             echo
             echo "This workflow is diagnostic only. It never edits or deploys application files."
