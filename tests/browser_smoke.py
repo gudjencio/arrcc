@@ -189,8 +189,9 @@ class ARRCCBrowserSmokeTests(unittest.TestCase):
         finally:
             context.close()
 
-    def test_firefox_and_webkit_critical_flows_desktop_and_mobile(self):
-        for browser_name in ("firefox", "webkit"):
+    def test_all_engines_critical_flows_desktop_and_mobile(self):
+        # Exercise alarm and screen signal in all engines with silent audio and no device APIs.
+        for browser_name in ("chromium", "firefox", "webkit"):
             with self.subTest(browser=browser_name):
                 context = self.create_context(browser_name=browser_name)
                 try:
