@@ -137,6 +137,30 @@ class ARRCCBrowserSmokeTests(unittest.TestCase):
         finally:
             context.close()
 
+    def test_sos_remains_available_when_external_services_fail(self):
+        # External requests are blocked by create_context; emergency access must remain local.
+        for browser_name in ("chromium", "firefox", "webkit"):
+            with self.subTest(browser=browser_name):
+                context = self.create_context(browser_name=browser_name)
+                errors = []
+                try:
+                    page = self.open_page(context)
+                    page.on("pageerror", lambda error: errors.append(str(error)))
+
+                    # The SOS panel and emergency links must work without external services.
+                    page.locator("#sosButton").click()
+                    dialog = page.locator("#sosModal")
+                    self.assertIn("open", dialog.get_attribute("class") or "")
+                    for number in ("112", "17", "18", "114"):
+                        self.assertGreater(
+                            dialog.locator(f'a[href="tel:{number}"]').count(),
+                            0,
+                            f"{browser_name}: missing emergency link {number}",
+                        )
+                    self.assertEqual(errors, [], f"{browser_name}: page errors during network outage: {errors}")
+                finally:
+                    context.close()
+
     def test_sos_dialog_opens_and_closes_without_calling(self):
         context = self.create_context()
         try:
