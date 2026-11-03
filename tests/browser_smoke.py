@@ -234,6 +234,24 @@ class ARRCCBrowserSmokeTests(unittest.TestCase):
                     )
                     self.assertTrue(mobile_page.locator("#sosButton").is_visible())
                     self.assertTrue(mobile_page.locator("#alarmButton").is_visible())
+                    self.assertTrue(mobile_page.locator("#signalButton").is_visible())
+
+                    # Mobile alarm interaction uses the same silent audio mock.
+                    mobile_alarm = mobile_page.locator("#alarmButton")
+                    mobile_alarm.click()
+                    mobile_page.wait_for_function(
+                        "document.querySelector('#alarmButton').getAttribute('aria-pressed') === 'true'"
+                    )
+                    mobile_alarm.click()
+                    self.assertEqual(mobile_alarm.get_attribute("aria-pressed"), "false")
+
+                    # Mobile screen signal must also return to its initial state.
+                    mobile_signal = mobile_page.locator("#signalButton")
+                    mobile_signal_label = mobile_signal.inner_text()
+                    mobile_signal.click()
+                    self.assertNotEqual(mobile_signal.inner_text(), mobile_signal_label)
+                    mobile_signal.click()
+                    self.assertEqual(mobile_signal.inner_text(), mobile_signal_label)
                 finally:
                     mobile_context.close()
 
