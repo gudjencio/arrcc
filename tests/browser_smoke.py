@@ -464,19 +464,11 @@ class ARRCCBrowserSmokeTests(unittest.TestCase):
         try:
             page = self.open_page(context)
             page.on("pageerror", lambda error: errors.append(str(error)))
-            page.wait_for_function(
-                "('serviceWorker' in navigator) && navigator.serviceWorker.controller !== null",
-                timeout=10000,
-            ) if page.evaluate("!!navigator.serviceWorker && !!navigator.serviceWorker.controller") else None
-            page.evaluate("navigator.serviceWorker.ready")
-            page.wait_for_function(
-                "!!navigator.serviceWorker && !!navigator.serviceWorker.getRegistration()",
-                timeout=10000,
-            )
-            page.evaluate("navigator.serviceWorker.ready")
+            page.evaluate("navigator.serviceWorker.ready.then(() => true)")
             context.set_offline(True)
             page.reload(wait_until="domcontentloaded", timeout=10000)
             page.locator("#sosButton").wait_for(state="visible", timeout=5000)
+            page.wait_for_function("!!navigator.serviceWorker.controller", timeout=5000)
             self.assertFalse(page.locator("#sosButton").is_disabled())
             page.locator("#sosButton").click()
             dialog = page.locator("#sosModal")
