@@ -247,18 +247,17 @@ class ARRCCBrowserSmokeTests(unittest.TestCase):
         for error_code, expected_message in cases:
             with self.subTest(geolocation_error=error_code):
                 context = self.create_context()
-                context.add_init_script(
-                    """(code) => {
-                      Object.defineProperty(navigator, 'geolocation', {
-                        configurable: true,
-                        value: {
-                          getCurrentPosition(success, error) {
-                            window.setTimeout(() => error({code, message: 'Mock geolocation error'}), 0);
-                          }
-                        }
-                      });
-                    }""".replace("code", str(error_code))
-                )
+                mock_script = """(() => {
+                  Object.defineProperty(navigator, 'geolocation', {
+                    configurable: true,
+                    value: {
+                      getCurrentPosition(success, error) {
+                        window.setTimeout(() => error({code: ERROR_CODE_PLACEHOLDER, message: 'Mock geolocation error'}), 0);
+                      }
+                    }
+                  });
+                })();""".replace("ERROR_CODE_PLACEHOLDER", str(error_code))
+                context.add_init_script(mock_script)
                 try:
                     page = self.open_page(context)
                     page.locator("#language").select_option("fr")
@@ -273,12 +272,12 @@ class ARRCCBrowserSmokeTests(unittest.TestCase):
     def test_geolocation_unsupported_state_is_recoverable(self):
         context = self.create_context()
         context.add_init_script(
-            """() => {
+            """(() => {
               Object.defineProperty(navigator, 'geolocation', {
                 configurable: true,
                 value: undefined
               });
-            }"""
+            })();"""
         )
         try:
             page = self.open_page(context)
