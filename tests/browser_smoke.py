@@ -340,6 +340,33 @@ class ARRCCBrowserSmokeTests(unittest.TestCase):
                         context.close()
 
 
+    def test_camera_api_unavailable_is_handled_without_device_access(self):
+        # Simulate browsers without MediaDevices; never open a physical camera.
+        unsupported_mock = """(() => {
+          Object.defineProperty(navigator, 'mediaDevices', {
+            configurable: true,
+            value: undefined
+          });
+        })();"""
+        for browser_name in ("chromium", "firefox", "webkit"):
+            for selector in ("#photoButton", "#recordButton"):
+                with self.subTest(browser=browser_name, control=selector):
+                    context = self.create_context(browser_name=browser_name)
+                    context.add_init_script(unsupported_mock)
+                    errors = []
+                    try:
+                        page = self.open_page(context)
+                        page.on("pageerror", lambda error: errors.append(str(error)))
+                        page.locator("#language").select_option("fr")
+                        page.locator(selector).click()
+                        page.get_by_text("Caméra indisponible dans ce navigateur", exact=False).wait_for(timeout=3000)
+                        self.assertFalse(page.locator(selector).is_disabled())
+                        self.assertFalse(page.locator("#preview").is_visible())
+                        self.assertEqual(errors, [], f"{browser_name}: unexpected page errors {errors}")
+                    finally:
+                        context.close()
+
+
     def test_alarm_audio_unavailable_fails_safely(self):
         # Simulate browsers without Web Audio; the alarm must remain stopped and reusable.
         for browser_name in ("chromium", "firefox", "webkit"):
