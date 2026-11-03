@@ -480,5 +480,45 @@ class ARRCCBrowserSmokeTests(unittest.TestCase):
             context.close()
 
 
+    def test_report_email_is_prepared_locally_without_automatic_submission(self):
+        # This workflow only opens a draft in the user's email client; it never sends a message.
+        for browser_name in ("chromium", "firefox", "webkit"):
+            with self.subTest(browser=browser_name):
+                context = self.create_context(browser_name=browser_name)
+                requests = []
+                try:
+                    page = self.open_page(context)
+                    page.on("request", lambda request: requests.append(request.url))
+                    page.locator("#language").select_option("fr")
+
+                    # An email address is required before a draft can be prepared.
+                    page.locator("#emailReportButton").click()
+                    status = page.locator("#reportStatus")
+                    status.get_by_text("Ajoutez une adresse e-mail", exact=False).wait_for(timeout=3000)
+
+                    # Add a local-only test contact, then prepare (but do not send) a draft.
+                    page.locator("#contactName").fill("Contact de test")
+                    page.locator("#contactEmail").fill("arrcc-test@example.invalid")
+                    page.locator("#contactForm button[type='submit']").click()
+                    page.locator("#contactsList").get_by_text("Contact de test").wait_for(timeout=3000)
+
+                    original_url = page.url
+                    page.locator("#emailReportButton").click()
+                    status.get_by_text("Votre application e-mail devrait ouvrir un brouillon", exact=False).wait_for(timeout=3000)
+
+                    self.assertEqual(page.url, original_url, "Preparing a draft must not navigate away from ARRCC")
+                    self.assertTrue(
+                        any("Aucun message n’est envoyé automatiquement" in note.inner_text()
+                            for note in page.locator(".note").all()),
+                        "The contact section must explain that no message is sent automatically",
+                    )
+                    self.assertFalse(
+                        any(url.startswith("mailto:") for url in requests),
+                        "A mailto draft is a local handoff, not a network submission",
+                    )
+                finally:
+                    context.close()
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
