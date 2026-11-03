@@ -343,10 +343,17 @@ class ARRCCBrowserSmokeTests(unittest.TestCase):
     def test_camera_api_unavailable_is_handled_without_device_access(self):
         # Simulate browsers without MediaDevices; never open a physical camera.
         unsupported_mock = """(() => {
-          Object.defineProperty(navigator, 'mediaDevices', {
-            configurable: true,
-            value: undefined
-          });
+          if (navigator.mediaDevices) {
+            Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
+              configurable: true,
+              value: undefined
+            });
+          } else {
+            Object.defineProperty(navigator, 'mediaDevices', {
+              configurable: true,
+              value: {}
+            });
+          }
         })();"""
         for browser_name in ("chromium", "firefox", "webkit"):
             for selector in ("#photoButton", "#recordButton"):
