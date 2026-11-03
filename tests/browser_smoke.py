@@ -293,5 +293,34 @@ class ARRCCBrowserSmokeTests(unittest.TestCase):
                     context.close()
 
 
+    def test_camera_permission_denial_is_handled_without_device_access(self):
+        # Camera/microphone denial is simulated; no physical device is opened.
+        denial_mock = """(() => {
+          Object.defineProperty(navigator, 'mediaDevices', {
+            configurable: true,
+            value: {
+              getUserMedia() {
+                return Promise.reject(new DOMException('Mock permission denied', 'NotAllowedError'));
+              }
+            }
+          });
+        })();"""
+        for browser_name in ("chromium", "firefox", "webkit"):
+            for selector in ("#photoButton", "#recordButton"):
+                with self.subTest(browser=browser_name, control=selector):
+                    context = self.create_context(browser_name=browser_name)
+                    context.add_init_script(denial_mock)
+                    try:
+                        page = self.open_page(context)
+                        page.locator("#language").select_option("fr")
+                        page.locator(selector).click()
+                        page.get_by_text("Accès caméra impossible", exact=False).wait_for(timeout=3000)
+                        self.assertFalse(page.locator(selector).is_disabled())
+                        self.assertFalse(page.locator("#cameraPreview").is_visible())
+                    finally:
+                        context.close()
+
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
