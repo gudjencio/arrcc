@@ -135,10 +135,12 @@ class ARRCCHealthChecks(unittest.TestCase):
         self.assertIsNotNone(match, "Service worker precache list was not found")
         assets = re.findall(r"""["']([^"']+)["']""", match.group(1))
         self.assertTrue(assets, "Service worker precache list is empty")
-        missing = [
-            asset for asset in assets
-            if not (WEB / asset.removeprefix("./")).resolve().is_file()
-        ]
+        missing = []
+        for asset in assets:
+            relative = asset.removeprefix("./")
+            candidate = (WEB / relative).resolve() if relative else WEB.resolve()
+            if not candidate.exists():
+                missing.append(asset)
         self.assertFalse(missing, "Missing service-worker precache assets: " + ", ".join(missing))
 
     def test_javascript_files_pass_node_syntax_check(self):
