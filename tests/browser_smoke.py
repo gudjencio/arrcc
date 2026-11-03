@@ -423,5 +423,39 @@ class ARRCCBrowserSmokeTests(unittest.TestCase):
 
 
 
+    def test_emergency_access_survives_connection_loss(self):
+        # Go offline only after the local app has loaded; no real calls or submissions.
+        for browser_name in ("chromium", "firefox", "webkit"):
+            with self.subTest(browser=browser_name):
+                context = self.create_context(browser_name=browser_name)
+                errors = []
+                try:
+                    page = self.open_page(context)
+                    page.on("pageerror", lambda error: errors.append(str(error)))
+                    context.set_offline(True)
+
+                    # Core emergency UI must remain usable without a network connection.
+                    sos = page.locator("#sosButton")
+                    self.assertTrue(sos.is_visible())
+                    self.assertFalse(sos.is_disabled())
+                    sos.click()
+                    dialog = page.locator("#sosModal")
+                    self.assertIn("open", dialog.get_attribute("class") or "")
+                    for number in ("112", "17", "18", "114"):
+                        self.assertGreater(
+                            dialog.locator(f'a[href="tel:{number}"]').count(),
+                            0,
+                            f"{browser_name}: emergency link {number} missing while offline",
+                        )
+                    page.locator("#closeModal").click()
+                    self.assertNotIn("open", dialog.get_attribute("class") or "")
+                    self.assertEqual(
+                        errors, [],
+                        f"{browser_name}: page errors after connection loss: {errors}",
+                    )
+                finally:
+                    context.close()
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
