@@ -340,6 +340,25 @@ class ARRCCBrowserSmokeTests(unittest.TestCase):
                         context.close()
 
 
+    def test_alarm_audio_unavailable_fails_safely(self):
+        # Simulate browsers without Web Audio; the alarm must remain stopped and reusable.
+        for browser_name in ("chromium", "firefox", "webkit"):
+            with self.subTest(browser=browser_name):
+                context = self.create_context(browser_name=browser_name)
+                errors = []
+                try:
+                    page = self.open_page(context)
+                    page.on("pageerror", lambda error: errors.append(str(error)))
+                    page.evaluate("window.AudioContext = undefined; window.webkitAudioContext = undefined")
+                    button = page.locator("#alarmButton")
+                    button.click()
+                    self.assertEqual(button.get_attribute("aria-pressed"), "false")
+                    self.assertFalse(button.is_disabled())
+                    self.assertEqual(errors, [], f"{browser_name}: unexpected page errors {errors}")
+                finally:
+                    context.close()
+
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
