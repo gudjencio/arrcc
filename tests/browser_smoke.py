@@ -237,5 +237,59 @@ class ARRCCBrowserSmokeTests(unittest.TestCase):
                     mobile_context.close()
 
 
+    def test_geolocation_error_states_are_recoverable(self):
+        # Simulate browser geolocation errors; never request the real device location.
+        cases = (
+            (1, "Autorisation de position refusée"),
+            (2, "momentanément indisponible"),
+            (3, "trop de temps"),
+        )
+        for error_code, expected_message in cases:
+            with self.subTest(geolocation_error=error_code):
+                context = self.create_context()
+                context.add_init_script(
+                    """(code) => {
+                      Object.defineProperty(navigator, 'geolocation', {
+                        configurable: true,
+                        value: {
+                          getCurrentPosition(success, error) {
+                            window.setTimeout(() => error({code, message: 'Mock geolocation error'}), 0);
+                          }
+                        }
+                      });
+                    }""".replace("code", str(error_code))
+                )
+                try:
+                    page = self.open_page(context)
+                    page.locator("#language").select_option("fr")
+                    button = page.locator("#locateButton")
+                    button.click()
+                    page.get_by_text(expected_message, exact=False).wait_for(timeout=3000)
+                    self.assertFalse(button.is_disabled(), "Location button must be usable after an error")
+                    self.assertNotIn("Position obtenue", page.locator("#locationStatus").inner_text())
+                finally:
+                    context.close()
+
+    def test_geolocation_unsupported_state_is_recoverable(self):
+        context = self.create_context()
+        context.add_init_script(
+            """() => {
+              Object.defineProperty(navigator, 'geolocation', {
+                configurable: true,
+                value: undefined
+              });
+            }"""
+        )
+        try:
+            page = self.open_page(context)
+            page.locator("#language").select_option("fr")
+            button = page.locator("#locateButton")
+            button.click()
+            page.get_by_text("n’est pas prise en charge", exact=False).wait_for(timeout=3000)
+            self.assertFalse(button.is_disabled(), "Location button must be usable when geolocation is unsupported")
+        finally:
+            context.close()
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
