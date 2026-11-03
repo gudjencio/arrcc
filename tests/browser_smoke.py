@@ -238,56 +238,59 @@ class ARRCCBrowserSmokeTests(unittest.TestCase):
 
 
     def test_geolocation_error_states_are_recoverable(self):
-        # Simulate browser geolocation errors; never request the real device location.
+        # Simulate browser geolocation errors across all engines; never request real GPS.
         cases = (
             (1, "Autorisation de position refusée"),
             (2, "momentanément indisponible"),
             (3, "trop de temps"),
         )
-        for error_code, expected_message in cases:
-            with self.subTest(geolocation_error=error_code):
-                context = self.create_context()
-                mock_script = """(() => {
-                  Object.defineProperty(navigator, 'geolocation', {
-                    configurable: true,
-                    value: {
-                      getCurrentPosition(success, error) {
-                        window.setTimeout(() => error({code: ERROR_CODE_PLACEHOLDER, message: 'Mock geolocation error'}), 0);
-                      }
-                    }
-                  });
-                })();""".replace("ERROR_CODE_PLACEHOLDER", str(error_code))
-                context.add_init_script(mock_script)
+        for browser_name in ("chromium", "firefox", "webkit"):
+            for error_code, expected_message in cases:
+                with self.subTest(browser=browser_name, geolocation_error=error_code):
+                    context = self.create_context(browser_name=browser_name)
+                    mock_script = """(() => {
+                      Object.defineProperty(navigator, 'geolocation', {
+                        configurable: true,
+                        value: {
+                          getCurrentPosition(success, error) {
+                            window.setTimeout(() => error({code: ERROR_CODE_PLACEHOLDER, message: 'Mock geolocation error'}), 0);
+                          }
+                        }
+                      });
+                    })();""".replace("ERROR_CODE_PLACEHOLDER", str(error_code))
+                    context.add_init_script(mock_script)
+                    try:
+                        page = self.open_page(context)
+                        page.locator("#language").select_option("fr")
+                        button = page.locator("#locateButton")
+                        button.click()
+                        page.get_by_text(expected_message, exact=False).wait_for(timeout=3000)
+                        self.assertFalse(button.is_disabled(), "Location button must be usable after an error")
+                        self.assertNotIn("Position obtenue", page.locator("#locationStatus").inner_text())
+                    finally:
+                        context.close()
+
+    def test_geolocation_unsupported_state_is_recoverable(self):
+        for browser_name in ("chromium", "firefox", "webkit"):
+            with self.subTest(browser=browser_name):
+                context = self.create_context(browser_name=browser_name)
+                context.add_init_script(
+                    """(() => {
+                      Object.defineProperty(navigator, 'geolocation', {
+                        configurable: true,
+                        value: undefined
+                      });
+                    })();"""
+                )
                 try:
                     page = self.open_page(context)
                     page.locator("#language").select_option("fr")
                     button = page.locator("#locateButton")
                     button.click()
-                    page.get_by_text(expected_message, exact=False).wait_for(timeout=3000)
-                    self.assertFalse(button.is_disabled(), "Location button must be usable after an error")
-                    self.assertNotIn("Position obtenue", page.locator("#locationStatus").inner_text())
+                    page.get_by_text("n’est pas prise en charge", exact=False).wait_for(timeout=3000)
+                    self.assertFalse(button.is_disabled(), "Location button must be usable when geolocation is unsupported")
                 finally:
                     context.close()
-
-    def test_geolocation_unsupported_state_is_recoverable(self):
-        context = self.create_context()
-        context.add_init_script(
-            """(() => {
-              Object.defineProperty(navigator, 'geolocation', {
-                configurable: true,
-                value: undefined
-              });
-            })();"""
-        )
-        try:
-            page = self.open_page(context)
-            page.locator("#language").select_option("fr")
-            button = page.locator("#locateButton")
-            button.click()
-            page.get_by_text("n’est pas prise en charge", exact=False).wait_for(timeout=3000)
-            self.assertFalse(button.is_disabled(), "Location button must be usable when geolocation is unsupported")
-        finally:
-            context.close()
 
 
 if __name__ == "__main__":
