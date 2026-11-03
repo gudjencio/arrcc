@@ -45,6 +45,7 @@ class DocumentInventory(HTMLParser):
         self.ids = []
         self.local_refs = []
         self.inline_scripts = []
+        self.live_regions = 0
         self._in_inline_script = False
         self._script_buffer = []
 
@@ -52,6 +53,8 @@ class DocumentInventory(HTMLParser):
         attrs = dict(attrs)
         if "id" in attrs:
             self.ids.append(attrs["id"])
+        if attrs.get("aria-live") or attrs.get("role") == "status":
+            self.live_regions += 1
         for key in ("src", "href"):
             value = attrs.get(key, "")
             if value and not value.startswith(("#", "data:", "mailto:", "tel:", "javascript:")):
@@ -103,11 +106,10 @@ class ARRCCHealthChecks(unittest.TestCase):
 
     def test_local_html_assets_resolve(self):
         missing = []
+        web_root = WEB.resolve()
         for reference in self.document.local_refs:
             candidate = (WEB / reference.lstrip("/")).resolve()
-            if not str(candidate).startswith(str(WEB.resolve())):
-                missing.append(reference)
-            elif not candidate.is_file():
+            if not candidate.is_relative_to(web_root) or not candidate.is_file():
                 missing.append(reference)
         self.assertFalse(missing, "Missing or unsafe local asset references: " + ", ".join(missing))
 
@@ -115,6 +117,29 @@ class ARRCCHealthChecks(unittest.TestCase):
         manifest = json.loads((WEB / "manifest.webmanifest").read_text(encoding="utf-8"))
         self.assertIsInstance(manifest, dict)
         self.assertTrue(manifest.get("name") or manifest.get("short_name"))
+
+    def test_emergency_call_links_are_present(self):
+        for number in ("112", "17", "18", "114"):
+            with self.subTest(number=number):
+                self.assertIn(f'href="tel:{number}"', self.html)
+
+    def test_status_updates_have_accessible_announcements(self):
+        self.assertGreaterEqual(
+            self.document.live_regions, 1,
+            "Expected at least one aria-live or role=status region for assistive technology",
+        )
+
+    def test_service_worker_precache_assets_exist(self):
+        source = (WEB / "sw.js").read_text(encoding="utf-8")
+        match = re.search(r"const\s+ASSETS\s*=\s*\[(.*?)\]", source, re.S)
+        self.assertIsNotNone(match, "Service worker precache list was not found")
+        assets = re.findall(r"""["']([^"']+)["']""", match.group(1))
+        self.assertTrue(assets, "Service worker precache list is empty")
+        missing = [
+            asset for asset in assets
+            if not (WEB / asset.removeprefix("./")).resolve().is_file()
+        ]
+        self.assertFalse(missing, "Missing service-worker precache assets: " + ", ".join(missing))
 
     def test_javascript_files_pass_node_syntax_check(self):
         for name in ("app.js", "locales.js", "sw.js"):
