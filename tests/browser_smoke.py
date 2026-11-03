@@ -366,9 +366,14 @@ class ARRCCBrowserSmokeTests(unittest.TestCase):
                         page.on("pageerror", lambda error: errors.append(str(error)))
                         page.locator("#language").select_option("fr")
                         page.locator(selector).click()
-                        page.get_by_text("Caméra indisponible dans ce navigateur", exact=False).wait_for(timeout=3000)
+                        status = page.locator("#mediaStatus")
+                        self.assertIn(
+                            "Caméra indisponible dans ce navigateur",
+                            status.inner_text(timeout=3000),
+                            f"{browser_name}: expected the French camera-unavailable status, got {status.inner_text()!r}"
+                        )
                         self.assertFalse(page.locator(selector).is_disabled())
-                        self.assertFalse(page.locator("#preview").is_visible())
+                        self.assertTrue(page.locator("#cameraPreview").is_hidden())
                         self.assertEqual(errors, [], f"{browser_name}: unexpected page errors {errors}")
                     finally:
                         context.close()
