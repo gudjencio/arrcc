@@ -1,8 +1,8 @@
-# arrcc architecture
+# ARRCC — Aid, Rescue, Resilience and Community Coverage architecture
 
 ## Current browser layer
 
-The PWA can collect, with explicit permission:
+ARRCC's PWA can collect, with explicit permission:
 - GPS coordinates;
 - browser/device language;
 - network connection type when exposed by the browser;
