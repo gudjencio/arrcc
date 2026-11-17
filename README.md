@@ -5,6 +5,10 @@
 
 ARRCC is a web-based project designed to bring essential emergency assistance and community support tools together in one accessible interface. Its goal is to help people access useful resources, communicate important information, and respond more effectively to difficult situations.
 
+## What ARRCC stands for
+
+**Aid** means helping people reach useful support and emergency resources. **Rescue** reflects rapid access to emergency actions and local responders. **Resilience** means supporting preparedness, safety, recovery, and the ability to respond to difficult situations. **Community Coverage** expresses the project's goal of making these tools and information more accessible across communities, languages, and locations.
+
 ## Features
 
 - **SOS assistance:** quick access to emergency-related actions.
@@ -17,7 +21,7 @@ ARRCC is a web-based project designed to bring essential emergency assistance an
 
 ## Getting Started
 
-arrcc is designed to be accessible through a web browser. Open the deployed ARRCC application and allow the necessary browser permissions to use features such as geolocation.
+ARRCC is designed to be accessible through a web browser. Open the deployed ARRCC application and allow the necessary browser permissions to use features such as geolocation.
 
 For the most reliable geolocation experience, open ARRCC directly in its published web application rather than through an embedded page. Location access depends on browser permissions, device settings, and a secure connection.
 
