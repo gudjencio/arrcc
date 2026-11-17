@@ -1,9 +1,9 @@
-# arrcc
-### aid, rescue, resilience & community coverage
+# ARRCC
+### Aid, Rescue, Resilience and Community Coverage
 
 **A community-focused emergency assistance and resilience project.**
 
-arrcc is a web-based project designed to bring essential emergency assistance and community support tools together in one accessible interface. Its goal is to help people access useful resources, communicate important information, and respond more effectively to difficult situations.
+ARRCC is a web-based project designed to bring essential emergency assistance and community support tools together in one accessible interface. Its goal is to help people access useful resources, communicate important information, and respond more effectively to difficult situations.
 
 ## Features
 
@@ -17,28 +17,28 @@ arrcc is a web-based project designed to bring essential emergency assistance an
 
 ## Getting Started
 
-arrcc is designed to be accessible through a web browser. Open the deployed application and allow the necessary browser permissions to use features such as geolocation.
+arrcc is designed to be accessible through a web browser. Open the deployed ARRCC application and allow the necessary browser permissions to use features such as geolocation.
 
-For the most reliable geolocation experience, open arrcc directly in its published web application rather than through an embedded page. Location access depends on browser permissions, device settings, and a secure connection.
+For the most reliable geolocation experience, open ARRCC directly in its published web application rather than through an embedded page. Location access depends on browser permissions, device settings, and a secure connection.
 
 ## Important Safety Notice
 
-arrcc is a support tool, not a replacement for emergency services, professional responders, or official emergency guidance.
+ARRCC is a support tool, not a replacement for emergency services, professional responders, or official emergency guidance.
 
 - The application does not guarantee that help will be dispatched.
 - SOS actions and notifications must not be assumed to contact emergency services automatically.
 - Geolocation may be unavailable if permission is denied, the device cannot determine its position, or the browser restricts access.
 - Always contact the appropriate local emergency services directly when immediate assistance is needed.
 
-Do not rely on arrcc as your sole means of obtaining emergency assistance.
+Do not rely on ARRCC as your sole means of obtaining emergency assistance.
 
 ## Technology
 
-arrcc is a web-based project published through GitHub Pages and designed for browser access. Some functionality depends on browser APIs, device capabilities, network availability, and user permissions.
+ARRCC is a web-based project published through GitHub Pages and designed for browser access. Some functionality depends on browser APIs, device capabilities, network availability, and user permissions.
 
 ## Project Status
 
-arrcc is publicly available and continues to be developed. Features and compatibility may evolve as the project improves.
+ARRCC is publicly available and continues to be developed. Features and compatibility may evolve as the project improves.
 
 ## Contributing
 
@@ -52,6 +52,6 @@ Please refer to the repository's license information for the terms governing the
 
 ---
 
-**arrcc — aid, rescue, resilience & community coverage**
+**ARRCC — Aid, Rescue, Resilience and Community Coverage**
 
 *Building more accessible tools for emergency assistance and community resilience.*
