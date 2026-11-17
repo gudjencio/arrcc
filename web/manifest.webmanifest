@@ -1,10 +1,10 @@
 {
-  "name":"arrcc — Aid, Rescue, Resilience and Community Coverage",
-  "short_name":"arrcc",
+  "name":"ARRCC — Aid, Rescue, Resilience and Community Coverage",
+  "short_name":"ARRCC",
   "start_url":"./",
   "display":"standalone",
   "background_color":"#07090d",
   "theme_color":"#07090d",
-  "description":"Open-source safety and community coverage prototype.",
+  "description":"Aid, Rescue, Resilience and Community Coverage: an open-source emergency assistance, rescue, resilience and community-support project.",
   "icons":[]
 }
