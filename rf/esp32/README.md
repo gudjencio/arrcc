@@ -1,4 +1,4 @@
-# arrcc RF sensor layer
+# ARRCC — Aid, Rescue, Resilience and Community Coverage RF sensor layer
 
 This directory is intentionally a research interface, not a weapon-detection system.
 
@@ -10,7 +10,7 @@ Recommended research path:
 4. Detect changes/motion.
 5. Calibrate multiple sensors.
 6. Estimate location/occupancy.
-7. Send signed observations to an authenticated arrcc backend.
+7. Send signed observations to an authenticated ARRCC backend.
 8. Fuse observations with non-RF signals.
 
 The browser must not be treated as a raw CSI receiver.
